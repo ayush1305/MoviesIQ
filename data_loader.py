@@ -58,8 +58,8 @@ def load_and_clean_data(file_path):
     # Drop rows with null values in core numeric columns
     df = df.dropna(subset=numeric_cols)
     
-    # Clean budget and revenue (must be > 0 for financial analysis)
-    df = df[(df['budget'] > 0) & (df['revenue'] > 0)]
+    # Clean budget and revenue (budget must be > 0, revenue can be >= 0)
+    df = df[(df['budget'] > 0) & (df['revenue'] >= 0)]
     df = df.dropna(subset=numeric_cols) # recheck after numeric conversion
     
     # Parse genres
