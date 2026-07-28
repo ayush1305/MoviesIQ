@@ -33,6 +33,14 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
+    /* Shift content upwards by reducing top padding of the main container */
+    .block-container,
+    [data-testid="stAppViewBlockContainer"],
+    section.stMain .block-container {{
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }}
+    
     /* Main body background and text font styling */
     .stApp {{
         font-family: 'DejaVu Sans', sans-serif;
