@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import pandas as pd
 import numpy as np
-from data_loader import load_and_clean_data, generate_mock_data
+from data_loader import load_and_clean_data
 from analysis import (
     plot_budget_vs_revenue,
     plot_genre_trends,
@@ -135,7 +135,13 @@ st.markdown(
 # ----------------------------------------------------
 # DATA LOADING & CACHING
 # ----------------------------------------------------
-DATA_FILE_PATH = "movies.csv"
+# Check for case-sensitive filenames on Linux hosts (Streamlit Cloud)
+if os.path.exists("movies.csv"):
+    DATA_FILE_PATH = "movies.csv"
+elif os.path.exists("Movies.csv"):
+    DATA_FILE_PATH = "Movies.csv"
+else:
+    DATA_FILE_PATH = "movies.csv"
 
 # Title header (without emojis, custom color)
 st.markdown(
@@ -149,9 +155,8 @@ st.markdown(
 )
 
 # Initialize session state for dataset status
-if 'dataset_loaded' not in st.st_state if hasattr(st, 'st_state') else 'dataset_loaded' not in st.session_state:
+if 'dataset_loaded' not in st.session_state:
     st.session_state['dataset_loaded'] = False
-    st.session_state['using_mock'] = False
 
 df = None
 all_genres = []
@@ -177,7 +182,6 @@ if uploaded_file is not None:
     try:
         df, all_genres = load_and_clean_data(uploaded_file)
         st.session_state['dataset_loaded'] = True
-        st.session_state['using_mock'] = False
         st.sidebar.success("Successfully loaded uploaded dataset.")
     except Exception as e:
         st.sidebar.error(f"Error loading uploaded file: {str(e)}")
@@ -185,29 +189,11 @@ elif os.path.exists(DATA_FILE_PATH):
     try:
         df, all_genres = load_and_clean_data(DATA_FILE_PATH)
         st.session_state['dataset_loaded'] = True
-        st.session_state['using_mock'] = False
-        st.sidebar.info(f"Loaded {DATA_FILE_PATH} from project root.")
+        st.sidebar.info("Loaded movies.csv from project root.")
     except Exception as e:
-        st.sidebar.error(f"Error reading local {DATA_FILE_PATH}: {str(e)}")
+        st.sidebar.error(f"Error reading local movies.csv: {str(e)}")
 else:
-    # Generate mock dataset for instant preview
-    mock_df = generate_mock_data()
-    # Save the mock dataset locally as fallback
-    mock_df.to_csv(DATA_FILE_PATH, index=False)
-    df, all_genres = load_and_clean_data(DATA_FILE_PATH)
-    st.session_state['dataset_loaded'] = True
-    st.session_state['using_mock'] = True
-    st.sidebar.warning(f"{DATA_FILE_PATH} not found. Running on generated demonstration data.")
-    st.sidebar.markdown(
-        f"""
-        <div style="font-size: 12px; color: #666666; margin-top: 5px;">
-            To use your own data, place a file named <b>movies.csv</b> in the directory:
-            <br><code>C:\\Users\\Ayush\\.gemini\\antigravity\\scratch\\movie_iq\\movies.csv</code>
-            <br>or upload it above.
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.sidebar.warning("movies.csv not found. Please upload the file above to begin analysis.")
 
 # Proceed only if df is successfully loaded
 if df is not None and not df.empty:
