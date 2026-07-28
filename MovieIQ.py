@@ -277,11 +277,14 @@ if df is not None and not df.empty:
             if not eda_df.empty:
                 fig_br = plot_budget_vs_revenue(eda_df)
                 st.pyplot(fig_br)
+                # Calculate dynamic correlation and stats
+                correlation = eda_df['budget'].corr(eda_df['revenue'])
+                corr_strength = "strong" if correlation > 0.7 else ("moderate" if correlation > 0.4 else "weak")
+                breakeven_pct = (eda_df['revenue'] >= eda_df['budget']).mean() * 100
                 st.markdown(
-                    """
-                    **Description**: The scatter plot shows a strong positive correlation between a movie's budget and its revenue.
-                    Higher budgets do tend to yield higher absolute revenues. However, higher budgets also carry significantly higher risk;
-                    several high-budget movies fall below the diagonal red dashed "break-even" line, meaning they failed to earn back their production budget.
+                    f"""
+                    **Description**: The scatter plot displays the financial outcomes of the filtered selection. There is a **{corr_strength} positive correlation** (Pearson *r* = **{correlation:.2f}**) between budget and revenue. 
+                    Among these movies, **{breakeven_pct:.1f}%** broke even (Revenue $\geq$ Budget). High-budget movies positioned below the red dashed diagonal line represent substantial financial losses where production costs exceeded sales.
                     """
                 )
             else:
@@ -292,12 +295,32 @@ if df is not None and not df.empty:
             if not eda_df.empty:
                 fig_genre = plot_genre_trends(eda_df)
                 st.pyplot(fig_genre)
+                
+                # Calculate dynamic genre stats
+                exploded = eda_df.explode('parsed_genres')
+                common_genres = exploded['parsed_genres'].value_counts()
+                if not common_genres.empty:
+                    most_common_genre = common_genres.index[0]
+                    most_common_count = common_genres.values[0]
+                    
+                    genre_success = exploded.groupby('parsed_genres')['success'].agg(['mean', 'count'])
+                    reliable_genres = genre_success[genre_success['count'] >= 2]
+                    if not reliable_genres.empty:
+                        highest_success_genre = reliable_genres['mean'].idxmax()
+                        highest_success_rate = reliable_genres['mean'].max() * 100
+                    else:
+                        highest_success_genre = genre_success['mean'].idxmax()
+                        highest_success_rate = genre_success['mean'].max() * 100
+                        
+                    genre_desc = f"The most frequent genre in this selection is **{most_common_genre}** ({most_common_count} movies). The most profitable genre is **{highest_success_genre}** with a success rate of **{highest_success_rate:.1f}%** (among genres with multiple movies)."
+                else:
+                    genre_desc = "No genre distributions are available for the current selection."
+
                 st.markdown(
-                    """
-                    **Description**: The left bar chart displays the most frequent primary genres in the dataset. 
-                    The right bar chart displays their corresponding financial success rates (percentage of movies where Revenue > Budget). 
-                    While certain genres like Action and Adventure are highly common, genres such as Science Fiction, Thriller, and Fantasy
-                    often show varying levels of success rates, with some niche genres achieving high percentages of profitability despite fewer releases.
+                    f"""
+                    **Description**: The left bar chart displays the most frequent genres for the selected data. The right bar chart displays their financial success rates (Revenue > Budget). 
+                    
+                    *Active Selection Insight*: {genre_desc}
                     """
                 )
             else:
@@ -311,14 +334,23 @@ if df is not None and not df.empty:
             if not eda_df.empty:
                 fig_assoc = plot_success_associations(eda_df)
                 st.pyplot(fig_assoc)
+                
+                # Calculate dynamic median comparisons
+                success_df = eda_df[eda_df['success'] == 1]
+                fail_df = eda_df[eda_df['success'] == 0]
+                
+                median_pop_success = success_df['popularity'].median() if not success_df.empty else 0
+                median_pop_fail = fail_df['popularity'].median() if not fail_df.empty else 0
+                
+                median_vote_success = success_df['vote_average'].median() if not success_df.empty else 0
+                median_vote_fail = fail_df['vote_average'].median() if not fail_df.empty else 0
+                
                 st.markdown(
-                    """
-                    **Description**: Box plots display the distribution of key numerical variables grouped by movie outcome:
-                    - **Popularity**: Successful movies exhibit significantly higher popularity scores on average.
-                    - **Runtime**: Runtimes are relatively similar, but successful movies have a slightly tighter distribution around 100-120 minutes.
-                    - **Vote Average**: Successful movies have a higher median user rating compared to unsuccessful movies.
-                    
-                    *Insight*: Among the three features, **Popularity** exhibits the most pronounced division between successful and unsuccessful films.
+                    f"""
+                    **Description**: Box plots display the distribution of key numerical variables grouped by movie outcome (Successful vs Unsuccessful) for the filtered dataset:
+                    - **Popularity**: Successful movies have a median popularity of **{median_pop_success:.2f}** compared to **{median_pop_fail:.2f}** for unsuccessful movies.
+                    - **Vote Average**: Successful movies have a median user rating of **{median_vote_success:.2f}** compared to **{median_vote_fail:.2f}** for unsuccessful movies.
+                    - **Runtime**: Both groups maintain similar distributions, generally centering around 100-120 minutes.
                     """
                 )
             else:
@@ -329,16 +361,26 @@ if df is not None and not df.empty:
             if not eda_df.empty:
                 fig_corr = plot_correlation_heatmap(eda_df)
                 st.pyplot(fig_corr)
-                st.markdown(
-                    """
-                    **Description**: This correlation matrix evaluates the linear relationship between numerical features.
+                
+                # Calculate dynamic correlation heatmap stats
+                corr_features = ['budget', 'popularity', 'runtime', 'vote_average', 'vote_count']
+                corr_matrix = eda_df[corr_features].corr()
+                c = corr_matrix.abs().unstack()
+                c = c[c < 1.0].sort_values(ascending=False)
+                if not c.empty:
+                    strongest_pair = c.index[0]
+                    strongest_val = corr_matrix.loc[strongest_pair[0], strongest_pair[1]]
+                    strongest_str = f"**{strongest_pair[0].replace('_', ' ').title()}** and **{strongest_pair[1].replace('_', ' ').title()}** (*r* = **{strongest_val:.2f}**)"
+                else:
+                    strongest_str = "None"
                     
-                    **Modeling Concerns**: 
-                    - There is a very strong correlation between `revenue` and `vote_count` (often > 0.7) and between `budget` and `revenue`.
-                    - Because `revenue` is directly used to calculate our target variable `success` (`revenue > budget`), we **must exclude revenue**
-                      from features to prevent target leakage.
-                    - The strong correlation between features like `popularity` and `vote_count` indicates potential multicollinearity. While Random Forest 
-                      is robust to multicollinearity, keeping highly correlated features can dilute feature importance scores.
+                st.markdown(
+                    f"""
+                    **Description**: This matrix evaluates linear relationships within the filtered data.
+                    
+                    *Active Selection Insight*: The strongest correlation between predictor features is between {strongest_str}. 
+                    
+                    **Modeling Note**: `revenue` is excluded to prevent target leakage, and potential multicollinearity between popularity and vote count is monitored.
                     """
                 )
             else:
