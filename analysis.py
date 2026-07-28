@@ -216,8 +216,11 @@ def run_chi_square_test(df):
     # Explode the parsed_genres to assign genre labels per movie row
     exploded_df = df.explode('parsed_genres')
     
-    # Create contingency table
-    contingency_table = pd.crosstab(exploded_df['parsed_genres'], exploded_df['success'])
+    # Create contingency table (reset indices to avoid pandas duplicate index alignment ValueError in newer versions)
+    contingency_table = pd.crosstab(
+        exploded_df['parsed_genres'].reset_index(drop=True), 
+        exploded_df['success'].reset_index(drop=True)
+    )
     
     # Run test
     chi2, p_val, dof, expected = stats.chi2_contingency(contingency_table)
