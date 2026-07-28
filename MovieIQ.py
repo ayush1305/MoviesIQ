@@ -68,7 +68,8 @@ st.markdown(
     div[data-testid="stSlider"] > div,
     .stTabs [role="tablist"],
     div[data-testid="stNumberInput"] button,
-    div[data-testid="stSelectbox"] {{
+    div[data-testid="stSelectbox"],
+    div[data-testid="stMultiSelect"] {{
         filter: hue-rotate(213deg) brightness(50%) saturate(60%) !important;
     }}
     /* Style tabs */
