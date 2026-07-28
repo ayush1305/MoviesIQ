@@ -135,13 +135,13 @@ st.markdown(
 # ----------------------------------------------------
 # DATA LOADING & CACHING
 # ----------------------------------------------------
-# Check for case-sensitive filenames on Linux hosts (Streamlit Cloud)
-if os.path.exists("movies.csv"):
-    DATA_FILE_PATH = "movies.csv"
-elif os.path.exists("Movies.csv"):
+# Check for case-sensitive filenames on Linux hosts (Streamlit Cloud) - prioritize capital-M uploaded file
+if os.path.exists("Movies.csv"):
     DATA_FILE_PATH = "Movies.csv"
-else:
+elif os.path.exists("movies.csv"):
     DATA_FILE_PATH = "movies.csv"
+else:
+    DATA_FILE_PATH = "Movies.csv"
 
 # Title header (without emojis, custom color)
 st.markdown(
@@ -189,11 +189,11 @@ elif os.path.exists(DATA_FILE_PATH):
     try:
         df, all_genres = load_and_clean_data(DATA_FILE_PATH)
         st.session_state['dataset_loaded'] = True
-        st.sidebar.info("Loaded movies.csv from project root.")
+        st.sidebar.info(f"Loaded {DATA_FILE_PATH} from project root.")
     except Exception as e:
-        st.sidebar.error(f"Error reading local movies.csv: {str(e)}")
+        st.sidebar.error(f"Error reading local {DATA_FILE_PATH}: {str(e)}")
 else:
-    st.sidebar.warning("movies.csv not found. Please upload the file above to begin analysis.")
+    st.sidebar.warning(f"{DATA_FILE_PATH} not found. Please upload the file above to begin analysis.")
 
 # Proceed only if df is successfully loaded
 if df is not None and not df.empty:
