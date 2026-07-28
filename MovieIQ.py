@@ -67,9 +67,7 @@ st.markdown(
     /* Rotate hue of ONLY the red interactive components from Streamlit Red to brand Slate Blue, adjusting brightness/saturation to match dark Slate Blue */
     div[data-testid="stSlider"] > div,
     .stTabs [role="tablist"],
-    div[data-testid="stNumberInput"] button,
-    div[data-testid="stSelectbox"],
-    div[data-testid="stMultiSelect"] {{
+    div[data-testid="stNumberInput"] button {{
         filter: hue-rotate(213deg) brightness(50%) saturate(60%) !important;
     }}
     /* Style tabs */
