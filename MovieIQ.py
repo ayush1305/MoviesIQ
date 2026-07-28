@@ -64,14 +64,9 @@ st.markdown(
     div[data-baseweb="tag"] svg {{
         fill: white !important;
     }}
-    /* Rotate hue of all interactive inputs from Streamlit Red to brand Slate Blue */
-    div[data-testid="stSlider"],
-    .stTabs,
-    div[data-testid="stNumberInput"],
-    div[data-testid="stSelectbox"],
-    div[data-testid="stMultiSelect"],
-    button[data-testid="stBaseButton-secondary"] {{
-        filter: hue-rotate(213deg) !important;
+    /* Active tab underline highlight bar */
+    .stTabs [data-baseweb="tab-highlight-bar"] {{
+        background-color: {PRIMARY_COLOR} !important;
     }}
     /* Style tabs */
     .stTabs [data-baseweb="tab-list"] {{
@@ -83,6 +78,35 @@ st.markdown(
         padding-bottom: 10px;
         font-weight: 600;
         color: #555555;
+    }}
+    .stTabs [aria-selected="true"] {{
+        color: {PRIMARY_COLOR} !important;
+        border-bottom-color: {PRIMARY_COLOR} !important;
+    }}
+    /* Focus and hover borders for selectboxes/inputs */
+    div[data-baseweb="select"]:focus-within,
+    div[data-baseweb="select"]:hover {{
+        border-color: {PRIMARY_COLOR} !important;
+    }}
+    /* Hue rotate ONLY the slider active track line and handle dot from Red to Slate Blue */
+    div[data-baseweb="slider"] > div > div,
+    div[data-baseweb="slider"] [role="slider"] {{
+        filter: hue-rotate(213deg) !important;
+    }}
+    /* Color active slider value display labels (e.g. 6.50) to match brand Slate Blue */
+    div[data-testid="stSlider"] div[data-testid="stMarkdownContainer"] p {{
+        color: {PRIMARY_COLOR} !important;
+    }}
+    div[data-testid="stSlider"] [data-testid="stWidgetLabel"] div {{
+        color: {PRIMARY_COLOR} !important;
+    }}
+    /* Rotate hue of only the number input minus/plus buttons from Red to Slate Blue */
+    div[data-testid="stNumberInput"] button {{
+        filter: hue-rotate(213deg) !important;
+    }}
+    /* Keep main widget description labels dark gray */
+    div[data-testid="stSlider"] label p {{
+        color: #333333 !important;
     }}
     /* Custom prediction status cards */
     .success-card {{
