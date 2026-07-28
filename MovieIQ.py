@@ -54,14 +54,14 @@ st.markdown(
         background-color: transparent !important;
     }}
     /* Style tag items in multiselect to match Slate Blue */
-    div[data-baseweb="tag"] {{
+    [data-baseweb="tag"] {{
         background-color: {PRIMARY_COLOR} !important;
         color: white !important;
     }}
-    div[data-baseweb="tag"] span {{
+    [data-baseweb="tag"] span {{
         color: white !important;
     }}
-    div[data-baseweb="tag"] svg {{
+    [data-baseweb="tag"] svg {{
         fill: white !important;
     }}
     /* Rotate hue of ONLY the red interactive components from Streamlit Red to brand Slate Blue, adjusting brightness/saturation to match dark Slate Blue */
